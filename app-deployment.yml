@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: hr-app
-        image: pulkit197/hr-copy3-hr-app:latest
+        image: nehabogoju10/cap-hrmang:latest
         ports:
         - containerPort: 3000
         env:
