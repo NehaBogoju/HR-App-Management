@@ -1,11 +1,14 @@
 version: 0.2
 
+env:
+  variables:
+    REPO_URI: 636768524979.dkr.ecr.eu-central-2.amazonaws.com/hr-app-management
+
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin <your-account-id>.dkr.ecr.<your-region>.amazonaws.com
-      - REPO_URI=<your-account-id>.dkr.ecr.<your-region>.amazonaws.com/hr-app-management
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
   build:
     commands:
@@ -13,10 +16,11 @@ phases:
       - docker build -t $REPO_URI:$IMAGE_TAG .
   post_build:
     commands:
-      - echo Pushing the Docker image...
+      - echo Pushing the Docker image to ECR...
       - docker push $REPO_URI:$IMAGE_TAG
-      - echo Writing image definitions...
+      - echo Writing imagedefinitions.json for ECS deployment...
       - printf '[{"name":"hr-app-container","imageUri":"%s"}]' $REPO_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:
-  files: imagedefinitions.json
+  files:
+    - imagedefinitions.json
